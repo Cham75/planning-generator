@@ -1,0 +1,401 @@
+[
+  {
+    "agent_id": "3052082",
+    "name": "Achrak, Celine",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle suggéré à partir de l'activité ENC_Superviseur."
+  },
+  {
+    "agent_id": "3052083",
+    "name": "Akheraz, Driss",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3085027",
+    "name": "ALEXIS, DUBOIS",
+    "role": "Team Lead",
+    "excluded": false,
+    "notes": "Rôle suggéré à partir de l'activité Team Lead."
+  },
+  {
+    "agent_id": "3054714",
+    "name": "Alves, Quentin",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3052084",
+    "name": "Azghari, Hayat",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3052085",
+    "name": "Bafiba, Nancy",
+    "role": "CQ",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3055191",
+    "name": "Bassine, Jalal",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3052089",
+    "name": "Bensetra, Salima",
+    "role": "CQ",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3052090",
+    "name": "Boulfroy, Aurore",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3055343",
+    "name": "Bureau, Ocane",
+    "role": "MO",
+    "excluded": false,
+    "notes": "Rôle suggéré à partir de l'activité Open Time."
+  },
+  {
+    "agent_id": "3052091",
+    "name": "Capiez, Brigitte",
+    "role": "CQ",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3052092",
+    "name": "Caroupanapoulle, Lucinda",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3052093",
+    "name": "Chauchet, Julien",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3054430",
+    "name": "Codina, Maxime",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3055725",
+    "name": "Cromlin, Antoine",
+    "role": "À définir",
+    "excluded": false,
+    "notes": "Activité Expert Métier détectée ; rôle à confirmer."
+  },
+  {
+    "agent_id": "3052094",
+    "name": "De Campos, Estelle",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3052095",
+    "name": "De Mol, Hilde",
+    "role": "CQ",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3054650",
+    "name": "Defente, Delphine",
+    "role": "MO",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3055677",
+    "name": "Degrasse, Natacha",
+    "role": "MO",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3055106",
+    "name": "Delbecq, Lonie",
+    "role": "Team Lead",
+    "excluded": false,
+    "notes": "Rôle suggéré à partir de l'activité Team Lead."
+  },
+  {
+    "agent_id": "3055045",
+    "name": "Deparis, Nelly",
+    "role": "MO",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3052098",
+    "name": "Desselle, Ludivine",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle suggéré à partir de l'activité ENC_Superviseur."
+  },
+  {
+    "agent_id": "3052100",
+    "name": "Dolhen, Coraline Yolande",
+    "role": "Team Lead",
+    "excluded": false,
+    "notes": "Rôle suggéré à partir de l'activité Team Lead."
+  },
+  {
+    "agent_id": "3052101",
+    "name": "Dos Santos, Gwenaele",
+    "role": "CQ",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3055681",
+    "name": "Esquina, Marine",
+    "role": "TC",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3052103",
+    "name": "Gossuin, Thomas",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3052104",
+    "name": "Guillaume, Aurelie",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3052105",
+    "name": "Hervieux, Charlotte",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3054336",
+    "name": "Ketiti, Jamel",
+    "role": "TC",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3055130",
+    "name": "Kouki, Sihem",
+    "role": "TC",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3055193",
+    "name": "Lemaire, Virginie",
+    "role": "Team Lead",
+    "excluded": false,
+    "notes": "Rôle suggéré à partir de l'activité Team Lead."
+  },
+  {
+    "agent_id": "3072569",
+    "name": "Levan, Cassandra",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3068784",
+    "name": "Mahieu, Martial",
+    "role": "Team Lead",
+    "excluded": false,
+    "notes": "Rôle suggéré à partir de l'activité Team Lead."
+  },
+  {
+    "agent_id": "3054359",
+    "name": "Makhlouf, Rabah",
+    "role": "TC",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3052109",
+    "name": "Malanda, Patrick",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3054562",
+    "name": "Malek, Lynda",
+    "role": "Team Lead",
+    "excluded": false,
+    "notes": "Rôle suggéré à partir de l'activité Team Lead."
+  },
+  {
+    "agent_id": "3068633",
+    "name": "Mbangas, Brian",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3033028",
+    "name": "Melaye, Frederique",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3054550",
+    "name": "Meziani, Chihab",
+    "role": "MO",
+    "excluded": false,
+    "notes": "Rôle suggéré à partir de l'activité Open Time."
+  },
+  {
+    "agent_id": "3052111",
+    "name": "Mole, Benjamin",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3054684",
+    "name": "Monnet, Fanny",
+    "role": "À définir",
+    "excluded": false,
+    "notes": "Activité Expert Métier détectée ; rôle à confirmer."
+  },
+  {
+    "agent_id": "3055258",
+    "name": "Pillier, Laura",
+    "role": "MO",
+    "excluded": true,
+    "notes": "Rôle suggéré à partir de l'activité Open Time."
+  },
+  {
+    "agent_id": "3054467",
+    "name": "Poette, TonyOlivier",
+    "role": "MO",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3052160",
+    "name": "Poissant, Laurine",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3055177",
+    "name": "Pouchin, Adrien",
+    "role": "MO",
+    "excluded": true,
+    "notes": "Rôle suggéré à partir de l'activité Open Time."
+  },
+  {
+    "agent_id": "3055148",
+    "name": "Quentin, Ocane",
+    "role": "Team Lead",
+    "excluded": false,
+    "notes": "Rôle suggéré à partir de l'activité Team Lead."
+  },
+  {
+    "agent_id": "3049965",
+    "name": "Ransant, Aurore",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3055808",
+    "name": "Rio, Anas",
+    "role": "TC",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3052117",
+    "name": "Rousseaux, Valentin Jean-Jacques Guy",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3061893",
+    "name": "SantAnna, Charlie",
+    "role": "TC",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3052120",
+    "name": "Sapin, Lilou",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3052122",
+    "name": "Siclier, Bruno",
+    "role": "CQ",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3055187",
+    "name": "Sy, Alioune Badara",
+    "role": "Team Lead",
+    "excluded": false,
+    "notes": "Rôle suggéré à partir de l'activité Team Lead."
+  },
+  {
+    "agent_id": "3055390",
+    "name": "Tavernier, Xavier",
+    "role": "MO",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3055098",
+    "name": "Tayibi, Manal",
+    "role": "CQ",
+    "excluded": false,
+    "notes": "Rôle suggéré à partir de l'activité ENC_Controleur qualite."
+  },
+  {
+    "agent_id": "3052123",
+    "name": "Toader, Isabella",
+    "role": "SUP",
+    "excluded": false,
+    "notes": "Rôle repris du fichier Roles fourni."
+  },
+  {
+    "agent_id": "3023554",
+    "name": "Touraine, Julien",
+    "role": "Team Lead",
+    "excluded": false,
+    "notes": "Rôle suggéré à partir de l'activité Team Lead."
+  }
+]

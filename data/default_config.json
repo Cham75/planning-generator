@@ -1,0 +1,29 @@
+{
+  "slots": [
+    {"start": 480, "end": 540, "need": 2},
+    {"start": 540, "end": 600, "need": 2},
+    {"start": 600, "end": 660, "need": 3},
+    {"start": 660, "end": 720, "need": 3},
+    {"start": 720, "end": 780, "need": 3},
+    {"start": 780, "end": 840, "need": 3},
+    {"start": 840, "end": 900, "need": 3},
+    {"start": 900, "end": 960, "need": 3},
+    {"start": 960, "end": 1020, "need": 3},
+    {"start": 1020, "end": 1080, "need": 3},
+    {"start": 1080, "end": 1140, "need": 2},
+    {"start": 1140, "end": 1200, "need": 2}
+  ],
+  "activity_map": {
+    "Open Time": "Open Time",
+    "Team Lead": "Team Lead",
+    "ENC_Superviseur": "ENC_Superviseur",
+    "ENC_Controleur qualite": "ENC_Controleur qualite",
+    "ENC_Contrôleur qualité": "ENC_Controleur qualite",
+    "ENC_Expert Metier": "ENC_Expert Metier",
+    "ENC_Expert Métier": "ENC_Expert Metier"
+  },
+  "blocked_categories_after_18": ["Open Time", "Team Lead"],
+  "role_options": ["SUP", "CQ", "TC", "MO", "Team Lead", "Open Time", "Autre", "À définir"],
+  "excluded_agent_ids": ["3055258", "3055177"],
+  "excluded_name_keys": ["pillier laura", "pilier laura", "pouchin adrien", "cochin adrien"]
+}
