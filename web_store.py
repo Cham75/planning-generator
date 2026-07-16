@@ -137,6 +137,8 @@ class AgentRepository(Protocol):
 
     def replace_all(self, profiles: Iterable[AgentProfile]) -> None: ...
 
+    def delete_many(self, keys: Iterable[str]) -> None: ...
+
     def ensure_seed(self, profiles: Iterable[AgentProfile]) -> None: ...
 
 
@@ -214,11 +216,21 @@ class BrowserLocalStorageAgentRepository:
             unique[profile_key(clean.agent_id, clean.name)] = clean
         self._write_profiles(unique.values())
 
+    def delete_many(self, keys: Iterable[str]) -> None:
+        deleted = {str(key) for key in keys}
+        remaining = [
+            item
+            for item in self.list_profiles()
+            if profile_key(item.agent_id, item.name) not in deleted
+        ]
+        self._write_profiles(remaining)
+
     def ensure_seed(self, profiles: Iterable[AgentProfile]) -> None:
-        existing = {profile_key(item.agent_id, item.name) for item in self.list_profiles()}
-        missing = [item for item in profiles if profile_key(item.agent_id, item.name) not in existing]
-        if missing:
-            self.upsert_many(missing)
+        # Seed only a browser that has never initialized the directory.  An
+        # intentionally empty list means the user deleted all agents and must
+        # not be repopulated automatically on the next rerun.
+        if self._read_raw() is None:
+            self.replace_all(profiles)
 
     def reset_to_seed(self, profiles: Iterable[AgentProfile]) -> None:
         self.replace_all(profiles)
@@ -256,11 +268,18 @@ class SessionAgentRepository:
     def replace_all(self, profiles: Iterable[AgentProfile]) -> None:
         self._write(_copy_profile(item) for item in profiles)
 
+    def delete_many(self, keys: Iterable[str]) -> None:
+        deleted = {str(key) for key in keys}
+        remaining = [
+            item
+            for item in self.list_profiles()
+            if profile_key(item.agent_id, item.name) not in deleted
+        ]
+        self._write(remaining)
+
     def ensure_seed(self, profiles: Iterable[AgentProfile]) -> None:
-        existing = {profile_key(item.agent_id, item.name) for item in self.list_profiles()}
-        missing = [item for item in profiles if profile_key(item.agent_id, item.name) not in existing]
-        if missing:
-            self.upsert_many(missing)
+        if self.cache_key not in self.session_cache:
+            self.replace_all(profiles)
 
     def reset_to_seed(self, profiles: Iterable[AgentProfile]) -> None:
         self.replace_all(profiles)

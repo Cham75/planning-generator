@@ -1,1 +1,1 @@
-4.0.0 — sauvegarde navigateur sans base de données
+5.0.0 — fenêtres interactives pour rôles, ajout et suppression des agents

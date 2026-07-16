@@ -21,6 +21,7 @@ from web_store import (
     MemoryAgentStore,
     SessionAgentRepository,
     load_seed_profiles,
+    profile_key,
     profiles_from_json_bytes,
     profiles_to_json,
 )
@@ -78,6 +79,14 @@ def inject_css() -> None:
         .stButton > button[kind="primary"]:hover, .stDownloadButton > button[kind="primary"]:hover {
             background: #173f65; border-color: #173f65;
         }
+        .missing-role-box {
+            background: #fff7e6; border: 1px solid #efc56b; border-radius: 10px;
+            padding: 12px 14px; margin: 8px 0 12px 0; color: #6b4a00;
+        }
+        .danger-note {
+            background: #fff0f0; border: 1px solid #e0aaaa; border-radius: 9px;
+            padding: 10px 12px; color: #8b2020; margin-bottom: 12px;
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -127,10 +136,7 @@ def get_repository_with_status():
             storage=browser_storage,
             session_cache=st.session_state,
         )
-        before_seed = len(repository.list_profiles())
         repository.ensure_seed(seed_profiles)
-        if before_seed == 0:
-            st.rerun()
     except Exception:
         storage_error = (
             "Le navigateur a bloqué la sauvegarde locale. Les rôles restent disponibles "
@@ -321,6 +327,132 @@ def dataframe_to_profiles(frame: pd.DataFrame) -> list[AgentProfile]:
     return profiles
 
 
+def _bump_revision(key: str) -> None:
+    st.session_state[key] = int(st.session_state.get(key, 0)) + 1
+
+
+def _set_flash(message: str) -> None:
+    st.session_state["planning_assistance_flash"] = message
+
+
+def _show_flash() -> None:
+    message = st.session_state.pop("planning_assistance_flash", None)
+    if message:
+        st.toast(str(message), icon="✅")
+
+
+@st.dialog("Agents sans rôle", width="large")
+def missing_roles_dialog(
+    profiles: list[AgentProfile],
+    role_options: list[str],
+    repository,
+    dialog_signature: str,
+) -> None:
+    st.write(
+        "Ces agents ne peuvent pas être utilisés dans le planning tant que leur rôle n’est "
+        "pas défini. Sélectionnez un rôle pour chacun, puis enregistrez."
+    )
+    frame = profiles_dataframe(profiles)
+    edited = st.data_editor(
+        frame,
+        key=f"missing_roles_editor_{dialog_signature}",
+        hide_index=True,
+        width="stretch",
+        height=min(520, 90 + max(1, len(frame)) * 42),
+        disabled=["Identifiant", "Agent", "Notes"],
+        column_config={
+            "Identifiant": st.column_config.TextColumn("ID", width="small"),
+            "Agent": st.column_config.TextColumn("Agent", width="large"),
+            "Rôle": st.column_config.SelectboxColumn(
+                "Rôle", options=role_options, required=True, width="medium"
+            ),
+            "Exclu": st.column_config.CheckboxColumn(
+                "Exclure de l’assistance", width="small"
+            ),
+            "Notes": st.column_config.TextColumn("Notes", width="medium"),
+        },
+    )
+    updated = dataframe_to_profiles(edited)
+    unresolved = [item.name for item in updated if item.role == "À définir"]
+    if unresolved:
+        st.caption(
+            "Rôle encore manquant : " + ", ".join(unresolved)
+        )
+
+    if st.button(
+        "Enregistrer les rôles",
+        type="primary",
+        width="stretch",
+        disabled=bool(unresolved),
+        key=f"save_missing_roles_{dialog_signature}",
+    ):
+        repository.upsert_many(updated)
+        _bump_revision("roles_revision")
+        _bump_revision("agents_page_revision")
+        _set_flash(f"{len(updated)} rôle(s) enregistré(s).")
+        st.rerun()
+
+
+@st.dialog("Ajouter un agent")
+def add_agent_dialog(config: AppConfig, repository) -> None:
+    st.caption("L’agent sera mémorisé dans ce navigateur.")
+    with st.form("add_agent_dialog_form", clear_on_submit=False):
+        agent_id = st.text_input("Identifiant", placeholder="Ex. 3059999")
+        name = st.text_input("Nom, prénom", placeholder="Ex. Dupont, Marie")
+        role = st.selectbox("Rôle", config.role_options)
+        excluded = st.checkbox("Exclure de toute assistance")
+        notes = st.text_input("Notes", placeholder="Facultatif")
+        submitted = st.form_submit_button(
+            "Ajouter l’agent", type="primary", width="stretch"
+        )
+    if submitted:
+        if not name.strip() and not agent_id.strip():
+            st.error("Saisissez au moins un nom ou un identifiant.")
+            return
+        repository.upsert_many(
+            [
+                AgentProfile(
+                    agent_id=agent_id.strip(),
+                    name=name.strip(),
+                    role=role,
+                    excluded=excluded,
+                    notes=notes.strip(),
+                )
+            ]
+        )
+        _bump_revision("agents_page_revision")
+        _set_flash("Agent ajouté.")
+        st.rerun()
+
+
+@st.dialog("Confirmer la suppression")
+def delete_agents_dialog(
+    selected_keys: list[str],
+    selected_names: list[str],
+    repository,
+) -> None:
+    st.markdown(
+        '<div class="danger-note"><strong>Cette action retire les agents de la liste '
+        'mémorisée sur ce navigateur.</strong></div>',
+        unsafe_allow_html=True,
+    )
+    st.write("Agents sélectionnés :")
+    for name in selected_names:
+        st.write(f"• {name}")
+    cancel_col, delete_col = st.columns(2)
+    if cancel_col.button("Annuler", width="stretch"):
+        st.rerun()
+    if delete_col.button(
+        f"Supprimer ({len(selected_keys)})",
+        type="primary",
+        width="stretch",
+    ):
+        repository.delete_many(selected_keys)
+        _bump_revision("agents_page_revision")
+        _set_flash(f"{len(selected_keys)} agent(s) supprimé(s).")
+        st.rerun()
+
+
 def build_excel(intervals, parser_issues, source_names, profiles, config, exporter):
     store = MemoryAgentStore(profiles)
     scheduler = PlanningScheduler(config, store)
@@ -427,7 +559,7 @@ def render_generator(config, exporter, repository, storage_error) -> None:
         "Fichiers Excel NICE",
         type=["xlsx"],
         accept_multiple_files=True,
-        key="nice_files_v2",
+        key="nice_files_v3",
         label_visibility="collapsed",
     )
     if not uploaded_files:
@@ -492,7 +624,7 @@ def render_generator(config, exporter, repository, storage_error) -> None:
         return
 
     period_dates = sorted({item.work_date for item in intervals})
-    detected_agents = {item.agent_id for item in intervals}
+    detected_agents = {item.agent_id or item.agent_name for item in intervals}
     metrics = st.columns(4)
     metrics[0].metric("Fichiers", len(source_names))
     metrics[1].metric("Feuilles", len(selected_keys))
@@ -502,7 +634,7 @@ def render_generator(config, exporter, repository, storage_error) -> None:
 
     section_intro(
         "2. Agents et rôles",
-        "Les rôles déjà enregistrés sont repris automatiquement. Un nouvel agent apparaît avec le statut Nouveau et doit recevoir un rôle via la liste déroulante.",
+        "Les agents connus sont reconnus automatiquement. Les agents sans rôle ouvrent une fenêtre de configuration.",
     )
     try:
         stored_profiles = repository.list_profiles()
@@ -511,40 +643,77 @@ def render_generator(config, exporter, repository, storage_error) -> None:
         return
 
     agents_df = make_agents_dataframe(intervals, stored_profiles, config)
-    new_count = int((agents_df["Statut"] == "Nouveau").sum()) if not agents_df.empty else 0
-    if new_count:
-        st.warning(f"{new_count} nouvel agent détecté. Choisissez son rôle avant de générer le planning.")
+    new_rows = agents_df[agents_df["Statut"] == "Nouveau"] if not agents_df.empty else agents_df
+    new_profiles = dataframe_to_profiles(new_rows) if not new_rows.empty else []
+    new_signature = hashlib.sha256(
+        "|".join(sorted(profile_key(item.agent_id, item.name) for item in new_profiles)).encode()
+    ).hexdigest()
+    if new_profiles and st.session_state.get("persisted_new_agents_signature") != new_signature:
+        repository.upsert_many(new_profiles)
+        st.session_state.persisted_new_agents_signature = new_signature
+
+    current_profiles = dataframe_to_profiles(agents_df)
+    undefined_profiles = [item for item in current_profiles if item.role == "À définir"]
+    missing_signature = hashlib.sha256(
+        (
+            upload_sig
+            + "|"
+            + "|".join(sorted(selected_keys))
+            + "|"
+            + "|".join(sorted(profile_key(item.agent_id, item.name) for item in undefined_profiles))
+        ).encode()
+    ).hexdigest()[:16]
+
+    open_missing_dialog = False
+    if undefined_profiles:
+        st.markdown(
+            f'<div class="missing-role-box"><strong>{len(undefined_profiles)} agent(s) sans rôle.</strong> '
+            'Le planning restera bloqué tant que ces rôles ne sont pas définis.</div>',
+            unsafe_allow_html=True,
+        )
+        open_missing_dialog = st.button(
+            "Définir les rôles manquants",
+            type="primary",
+            width="stretch",
+            key=f"open_missing_roles_{missing_signature}",
+        )
 
     roles_revision = int(st.session_state.get("roles_revision", 0))
     editor_key = f"import_agents_{upload_sig[:10]}_{hash(tuple(sorted(selected_keys)))}_{roles_revision}"
-    edited_df = st.data_editor(
-        agents_df,
-        key=editor_key,
-        hide_index=True,
-        width="stretch",
-        height=min(620, 90 + max(1, len(agents_df)) * 35),
-        disabled=["Identifiant", "Agent", "Jours", "Statut"],
-        column_config={
-            "Identifiant": st.column_config.TextColumn("ID", width="small"),
-            "Agent": st.column_config.TextColumn("Agent", width="large"),
-            "Rôle": st.column_config.SelectboxColumn(
-                "Rôle", options=config.role_options, required=True, width="medium"
-            ),
-            "Exclu": st.column_config.CheckboxColumn("Exclu", width="small"),
-            "Notes": st.column_config.TextColumn("Notes", width="large"),
-            "Jours": st.column_config.NumberColumn("Jours", width="small"),
-            "Statut": st.column_config.TextColumn("Statut", width="small"),
-        },
-    )
+    with st.expander(
+        "Voir et modifier tous les agents de cette extraction",
+        expanded=not undefined_profiles,
+    ):
+        edited_df = st.data_editor(
+            agents_df,
+            key=editor_key,
+            hide_index=True,
+            width="stretch",
+            height=min(620, 90 + max(1, len(agents_df)) * 35),
+            disabled=["Identifiant", "Agent", "Jours", "Statut"],
+            column_config={
+                "Identifiant": st.column_config.TextColumn("ID", width="small"),
+                "Agent": st.column_config.TextColumn("Agent", width="large"),
+                "Rôle": st.column_config.SelectboxColumn(
+                    "Rôle", options=config.role_options, required=True, width="medium"
+                ),
+                "Exclu": st.column_config.CheckboxColumn("Exclu", width="small"),
+                "Notes": st.column_config.TextColumn("Notes", width="large"),
+                "Jours": st.column_config.NumberColumn("Jours", width="small"),
+                "Statut": st.column_config.TextColumn("Statut", width="small"),
+            },
+        )
+
     profiles = dataframe_to_profiles(edited_df)
     undefined = [item.name for item in profiles if item.role == "À définir"]
 
     save_col, generate_col = st.columns([1, 2])
-    if save_col.button("Enregistrer les rôles", width="stretch"):
+    if save_col.button("Enregistrer les modifications", width="stretch"):
         try:
             repository.upsert_many(profiles)
-            st.session_state.roles_revision = roles_revision + 1
-            st.success("Rôles et exclusions enregistrés.")
+            _bump_revision("roles_revision")
+            _bump_revision("agents_page_revision")
+            _set_flash("Rôles, exclusions et notes enregistrés.")
             st.rerun()
         except Exception as exc:
             st.error(f"Enregistrement impossible : {exc}")
@@ -592,6 +761,19 @@ def render_generator(config, exporter, repository, storage_error) -> None:
     if undefined:
         st.caption("Génération bloquée tant que ces rôles ne sont pas définis : " + ", ".join(undefined))
 
+    auto_dialog = bool(undefined_profiles) and (
+        st.session_state.get("auto_missing_roles_signature") != missing_signature
+    )
+    if auto_dialog:
+        st.session_state.auto_missing_roles_signature = missing_signature
+    if undefined_profiles and (auto_dialog or open_missing_dialog):
+        missing_roles_dialog(
+            undefined_profiles,
+            config.role_options,
+            repository,
+            missing_signature,
+        )
+
     output = st.session_state.get("generated_output")
     if output:
         section_intro("3. Résultat", "Contrôlez rapidement la couverture puis téléchargez le planning.")
@@ -630,7 +812,7 @@ def render_generator(config, exporter, repository, storage_error) -> None:
 
 
 def render_agents(config, repository, storage_error) -> None:
-    hero("Consultez et modifiez la liste permanente des agents")
+    hero("Consultez, ajoutez et supprimez les agents")
     repository_banner(repository, storage_error)
     try:
         profiles = repository.list_profiles()
@@ -640,7 +822,7 @@ def render_agents(config, repository, storage_error) -> None:
 
     section_intro(
         "Liste des agents",
-        "Recherchez un agent, modifiez son rôle avec la liste déroulante ou excluez-le de l’assistance.",
+        "Modifiez les rôles avec les listes déroulantes. Cochez les lignes à supprimer, ou ajoutez un agent avec le bouton dédié.",
     )
     filter_cols = st.columns([2, 1, 1])
     search = filter_cols[0].text_input("Rechercher", placeholder="Nom, identifiant, rôle…")
@@ -672,14 +854,17 @@ def render_agents(config, repository, storage_error) -> None:
     total_cols[3].metric("À définir", sum(item.role == "À définir" for item in profiles))
 
     revision = int(st.session_state.get("agents_page_revision", 0))
+    directory_frame = profiles_dataframe(filtered)
+    directory_frame.insert(0, "Sélectionner", False)
     editor = st.data_editor(
-        profiles_dataframe(filtered),
+        directory_frame,
         key=f"agents_directory_{revision}_{role_filter}_{state_filter}_{hash(search)}",
         hide_index=True,
         width="stretch",
         height=min(720, 90 + max(1, len(filtered)) * 35),
         disabled=["Identifiant", "Agent"],
         column_config={
+            "Sélectionner": st.column_config.CheckboxColumn("Sélection", width="small"),
             "Identifiant": st.column_config.TextColumn("ID", width="small"),
             "Agent": st.column_config.TextColumn("Agent", width="large"),
             "Rôle": st.column_config.SelectboxColumn(
@@ -690,17 +875,32 @@ def render_agents(config, repository, storage_error) -> None:
         },
     )
 
-    action_cols = st.columns([1, 1, 2])
-    if action_cols[0].button("Enregistrer les modifications", type="primary", width="stretch"):
+    selected_rows = editor[editor["Sélectionner"] == True]  # noqa: E712
+    selected_keys = [
+        profile_key(str(row["Identifiant"]), str(row["Agent"]))
+        for row in selected_rows.to_dict(orient="records")
+    ]
+    selected_names = [str(value) for value in selected_rows["Agent"].tolist()]
+
+    add_col, save_col, delete_col, backup_col = st.columns([1, 1.3, 1.2, 1.3])
+    add_clicked = add_col.button("Ajouter un agent", type="primary", width="stretch")
+
+    if save_col.button("Enregistrer les modifications", width="stretch"):
         try:
             repository.upsert_many(dataframe_to_profiles(editor))
-            st.session_state.agents_page_revision = revision + 1
-            st.success("Modifications enregistrées.")
+            _bump_revision("agents_page_revision")
+            _set_flash("Modifications enregistrées.")
             st.rerun()
         except Exception as exc:
             st.error(f"Enregistrement impossible : {exc}")
 
-    action_cols[1].download_button(
+    delete_clicked = delete_col.button(
+        f"Supprimer la sélection ({len(selected_keys)})",
+        disabled=not selected_keys,
+        width="stretch",
+    )
+
+    backup_col.download_button(
         "Exporter une sauvegarde JSON",
         data=profiles_to_json(profiles),
         file_name="agents.json",
@@ -709,7 +909,12 @@ def render_agents(config, repository, storage_error) -> None:
         help="Utile pour transférer les rôles vers un autre ordinateur ou restaurer le navigateur.",
     )
 
-    with st.expander("Importer, transférer ou réinitialiser les agents"):
+    if add_clicked:
+        add_agent_dialog(config, repository)
+    if delete_clicked:
+        delete_agents_dialog(selected_keys, selected_names, repository)
+
+    with st.expander("Importer une sauvegarde ou réinitialiser la liste"):
         st.caption(
             "La mémorisation est automatique sur cet ordinateur. Le fichier JSON sert seulement "
             "de sauvegarde ou pour transférer les rôles vers un autre navigateur."
@@ -730,8 +935,8 @@ def render_agents(config, repository, storage_error) -> None:
                 if not imported_profiles:
                     raise ValueError("La sauvegarde ne contient aucun agent.")
                 repository.replace_all(imported_profiles)
-                st.session_state.agents_page_revision = revision + 1
-                st.success(f"{len(imported_profiles)} agents restaurés.")
+                _bump_revision("agents_page_revision")
+                _set_flash(f"{len(imported_profiles)} agents restaurés.")
                 st.rerun()
             except Exception as exc:
                 st.error(f"Restauration impossible : {exc}")
@@ -746,38 +951,9 @@ def render_agents(config, repository, storage_error) -> None:
             width="stretch",
         ):
             repository.reset_to_seed(load_seed_profiles(SEED_PATH))
-            st.session_state.agents_page_revision = revision + 1
-            st.success("Liste initiale restaurée.")
+            _bump_revision("agents_page_revision")
+            _set_flash("Liste initiale restaurée.")
             st.rerun()
-
-    with st.expander("Ajouter manuellement un agent"):
-        with st.form("add_agent_form", clear_on_submit=True):
-            form_cols = st.columns([1, 2, 1])
-            agent_id = form_cols[0].text_input("Identifiant")
-            name = form_cols[1].text_input("Nom, prénom")
-            role = form_cols[2].selectbox("Rôle", config.role_options)
-            excluded = st.checkbox("Exclure de toute assistance")
-            notes = st.text_input("Notes")
-            submitted = st.form_submit_button("Ajouter l’agent")
-            if submitted:
-                if not name.strip() and not agent_id.strip():
-                    st.error("Saisissez au moins un nom ou un identifiant.")
-                else:
-                    repository.upsert_many(
-                        [
-                            AgentProfile(
-                                agent_id=agent_id.strip(),
-                                name=name.strip(),
-                                role=role,
-                                excluded=excluded,
-                                notes=notes.strip(),
-                            )
-                        ]
-                    )
-                    st.session_state.agents_page_revision = revision + 1
-                    st.success("Agent ajouté.")
-                    st.rerun()
-
 
 def render_rules(config, repository, storage_error) -> None:
     hero("Règles actives et formats d’entrée pris en charge")
@@ -818,9 +994,10 @@ def render_rules(config, repository, storage_error) -> None:
 inject_css()
 config, parser, exporter = load_services()
 repository, storage_error = get_repository_with_status()
+_show_flash()
 
 st.sidebar.markdown("## Planning Assistance")
-st.sidebar.caption("Génération et gestion des agents · v4")
+st.sidebar.caption("Génération et gestion des agents · v5")
 page = st.sidebar.radio(
     "Navigation",
     ["Générer un planning", "Agents et rôles", "Règles et formats"],

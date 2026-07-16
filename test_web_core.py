@@ -100,6 +100,45 @@ def test_json_backup_round_trip() -> None:
     assert restored[0].excluded is True
 
 
+
+def test_deleted_seed_agent_does_not_return() -> None:
+    storage = FakeBrowserStorage()
+    seed = load_seed_profiles(ROOT / "data" / "agents_seed.json")[:3]
+    first_session: dict[str, object] = {}
+    repository = BrowserLocalStorageAgentRepository(storage, first_session)
+    repository.ensure_seed(seed)
+
+    removed = repository.list_profiles()[0]
+    from web_store import profile_key
+
+    repository.delete_many([profile_key(removed.agent_id, removed.name)])
+    assert all(item.agent_id != removed.agent_id for item in repository.list_profiles())
+
+    # A new Streamlit session runs ensure_seed again, but a deliberate deletion
+    # must remain deleted rather than being restored from the initial directory.
+    second_session: dict[str, object] = {}
+    reopened = BrowserLocalStorageAgentRepository(storage, second_session)
+    reopened.ensure_seed(seed)
+    assert all(item.agent_id != removed.agent_id for item in reopened.list_profiles())
+
+
+def test_delete_all_agents_stays_empty_until_explicit_reset() -> None:
+    storage = FakeBrowserStorage()
+    seed = load_seed_profiles(ROOT / "data" / "agents_seed.json")[:2]
+    repository = BrowserLocalStorageAgentRepository(storage, {})
+    repository.ensure_seed(seed)
+
+    from web_store import profile_key
+
+    repository.delete_many([profile_key(item.agent_id, item.name) for item in seed])
+    assert repository.list_profiles() == []
+
+    reopened = BrowserLocalStorageAgentRepository(storage, {})
+    reopened.ensure_seed(seed)
+    assert reopened.list_profiles() == []
+    reopened.reset_to_seed(seed)
+    assert len(reopened.list_profiles()) == 2
+
 if __name__ == "__main__":
     import sys
 
