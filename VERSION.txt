@@ -1,1 +1,1 @@
-6.0.0 — rotation superviseurs 19h–20h, Morning Brief et Picking QVCA
+6.0.1 — interface Streamlit v6 visible, aperçu Morning Brief et Picking QVCA
