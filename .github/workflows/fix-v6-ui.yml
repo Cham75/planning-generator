@@ -1,0 +1,111 @@
+name: Fix v6 UI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/fix-v6-ui.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update visible version and v6 preview
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("app.py")
+          text = path.read_text(encoding="utf-8")
+
+          text = text.replace(
+              'st.sidebar.caption("Génération et gestion des agents · v5")',
+              'st.sidebar.caption("Génération et gestion des agents · v6")',
+          )
+
+          old = '''    assignment_keys = {
+              (item.work_date, item.agent_id, item.slot_key) for item in result.assignments
+          }
+          assist_counts = Counter(
+              (item.work_date, item.agent_id) for item in result.assignments
+          )
+'''
+          new = '''    assignment_keys = {
+              (item.work_date, item.agent_id, item.slot_key) for item in result.assignments
+          }
+          assist_counts = Counter(
+              (item.work_date, item.agent_id) for item in result.assignments
+          )
+          planned_by_agent_day = defaultdict(list)
+          for activity in getattr(result, "planned_activities", []):
+              planned_by_agent_day[(activity.work_date, activity.agent_id)].append(activity)
+'''
+          if old in text:
+              text = text.replace(old, new, 1)
+
+          old = '''            value, _, _ = exporter._planning_slot_state(
+                  agent, slot.start_minute, slot.end_minute, assigned
+              )
+              row[slot.label] = value
+'''
+          new = '''            value, _, _ = exporter._planning_slot_state(
+                  agent, slot.start_minute, slot.end_minute, assigned
+              )
+              if not assigned:
+                  for activity in planned_by_agent_day[(work_date, agent.agent_id)]:
+                      if (
+                          activity.start_minute < slot.end_minute
+                          and activity.end_minute > slot.start_minute
+                      ):
+                          value = activity.activity_type
+                          break
+              row[slot.label] = value
+'''
+          if old in text:
+              text = text.replace(old, new, 1)
+
+          old = '''        if normalized == "Prise d'appels":
+              return "background-color: #fff2cc"
+'''
+          new = '''        if normalized == "Prise d'appels":
+              return "background-color: #fff2cc"
+          if normalized == "Morning Brief":
+              return "background-color: #d9eaf7; font-weight: 700"
+          if normalized == "Picking QVCA":
+              return "background-color: #e4dfec; font-weight: 700"
+'''
+          if old in text:
+              text = text.replace(old, new, 1)
+
+          old = '''        - Open Time et Team Lead sont en prise d’appels de 18h à 20h et ne sont donc pas affectés à l’assistance.
+          - La répartition est équilibrée sur la semaine et les heures consécutives sont évitées autant que possible.
+'''
+          new = '''        - Open Time et Team Lead sont en prise d’appels de 18h à 20h et ne sont donc pas affectés à l’assistance.
+          - De 19h à 20h, les deux positions sont attribuées en priorité aux superviseurs terminant à 20h, avec rotation équitable sur la semaine.
+          - Chaque superviseur reçoit un Morning Brief hebdomadaire de 15 minutes entre 11h30 et 15h30, sans simultanéité.
+          - Chaque superviseur reçoit deux heures hebdomadaires de Picking QVCA, en deux créneaux d’une heure pouvant être consécutifs.
+          - La répartition est équilibrée sur la semaine et les heures consécutives sont évitées autant que possible.
+'''
+          if old in text:
+              text = text.replace(old, new, 1)
+
+          path.write_text(text, encoding="utf-8", newline="\n")
+          PY
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.py
+          if git diff --cached --quiet; then
+            echo "No change required"
+          else
+            git commit -m "fix: display v6 and supervisor activities in Streamlit"
+            git push
+          fi
