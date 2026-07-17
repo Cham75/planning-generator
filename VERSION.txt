@@ -1,1 +1,1 @@
-5.0.0 — fenêtres interactives pour rôles, ajout et suppression des agents
+6.0.0 — rotation superviseurs 19h–20h, Morning Brief et Picking QVCA
