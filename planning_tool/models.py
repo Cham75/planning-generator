@@ -96,6 +96,17 @@ class Assignment:
 
 
 @dataclass
+class PlannedActivity:
+    work_date: date
+    agent_id: str
+    agent_name: str
+    role: str
+    activity_type: str
+    start_minute: int
+    end_minute: int
+
+
+@dataclass
 class Issue:
     severity: str
     issue_type: str
@@ -120,6 +131,7 @@ class ScheduleResult:
     days: list[DaySchedule]
     agent_days: list[AgentDay]
     intervals: list[ActivityInterval]
+    planned_activities: list[PlannedActivity]
     issues: list[Issue]
     selected_sources: list[str]
 

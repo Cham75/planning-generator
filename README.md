@@ -1,19 +1,19 @@
-# Planning Assistance — Streamlit v5
+# Planning Assistance — Streamlit v6
 
 Application web Streamlit sans base de données et sans installation sur le poste utilisateur.
 
-## Nouveautés v5
+## Nouveautés v6
 
-- Lorsqu'une extraction contient des agents avec le rôle `À définir`, une fenêtre s'ouvre automatiquement.
-- La fenêtre affiche les agents concernés et une liste déroulante de rôles pour chaque ligne.
-- La génération reste bloquée tant que tous les rôles nécessaires ne sont pas renseignés.
-- Les nouveaux agents détectés sont ajoutés automatiquement à la liste conservée dans le navigateur.
-- Dans **Agents et rôles** :
-  - bouton **Ajouter un agent** ouvrant une fenêtre dédiée ;
-  - cases de sélection sur chaque ligne ;
-  - suppression groupée avec confirmation ;
-  - modification directe du rôle, de l'exclusion et des notes.
-- Un agent supprimé ne réapparaît pas automatiquement au prochain redémarrage.
+- De 19h à 20h, les deux positions d’assistance sont attribuées en priorité à des superviseurs dont la vacation se termine à 20h. La rotation est équilibrée sur la semaine.
+- L’heure obligatoire quotidienne reste prioritaire : si la règle 19h–20h entre en conflit avec une obligation réalisable, le moteur conserve d’abord les heures obligatoires et signale la rotation incomplète.
+- Chaque superviseur actif reçoit un **Morning Brief de 15 minutes** sur l’ensemble de la semaine, du lundi au vendredi entre 11h30 et 15h30. Deux Morning Briefs ne sont jamais placés en même temps.
+- Chaque superviseur actif reçoit **deux créneaux d’une heure de Picking QVCA** du lundi au vendredi. Les deux heures peuvent être consécutives.
+- Les activités sont placées sans chevaucher l’assistance, les pauses ou une autre activité planifiée.
+- Ordre de priorité appliqué : assistance obligatoire, rotation superviseurs 19h–20h, Morning Brief, Picking QVCA.
+- Le planning Excel et l’aperçu Streamlit affichent directement `Morning Brief` et `Picking QVCA`.
+- L’onglet **Récap Assistances** contient maintenant le total de Picking QVCA et le créneau de Morning Brief de chaque superviseur.
+
+Les fonctions interactives v5 restent disponibles : fenêtre automatique pour les rôles manquants, listes déroulantes, ajout/suppression d’agents et stockage dans le navigateur.
 
 ## Conservation des agents
 
